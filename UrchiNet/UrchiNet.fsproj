@@ -36,7 +36,9 @@
   <Import Project="../.nuget/BuildMagic.targets" />
   <ItemGroup>
     <Compile Include="prelude.fs" />
+    <Compile Include="NonEmptyList.fs" />
     <Compile Include="Xml.fs" />
+    <Compile Include="Types.fs" />
     <Compile Include="UrchiNet.fs" />
     <None Include="packages.config" />
   </ItemGroup>
