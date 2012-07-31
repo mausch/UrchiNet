@@ -1,0 +1,13 @@
+_ReSharper.*
+*/bin
+*/obj
+*.resharper.user
+*.suo
+*.bak
+*.sln.cache
+*.user
+*.zip
+*.chm
+*.nupkg
+*~
+packages/*
