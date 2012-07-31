@@ -3,6 +3,8 @@
 type Account = {
     Id: int
     Name: string
+    Contact: string option
+    Email: string option
 }
 
 [<AutoOpen>]
@@ -19,10 +21,12 @@ module Functions =
         WebRequest.Create uri :?> HttpWebRequest
 
     let parseAccount (x: XElement) = 
-        let accountId = x |> Xml.element "accountId" |> Xml.value |> int
-        let accountName = x |> Xml.element "accountName" |> Xml.value
-        { Account.Id = accountId
-          Name = accountName }
+        let elementValue n = x |> Xml.element n |> Xml.value
+        let tryElementValue n = x |> Xml.tryElement n |> Option.map Xml.value
+        { Account.Id = elementValue "accountId" |> int
+          Name = elementValue "accountName" 
+          Contact = tryElementValue "contactName"
+          Email = tryElementValue "emailAddress" }
 
     let parseAccounts (x: XDocument) =
         x.Root.Elements() |> Seq.map parseAccount
