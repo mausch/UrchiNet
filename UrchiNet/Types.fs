@@ -9,6 +9,12 @@ type Account = {
     Email: string option
 }
 
+type Profile = {
+    Id: int
+    Name: string
+    Account: Account
+}
+
 /// https://secure.urchin.com/helpwiki/en/Tables_v1.html
 [<RequireQualifiedAccess>]
 type Table =

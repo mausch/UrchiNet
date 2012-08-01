@@ -5,20 +5,27 @@ open System.Xml.Linq
 open Fuchu
 open UrchiNet
 
-let tests = 
-    TestList [
+let pintegrationTests hostport login password = 
+    testList "integration" [
         testCase "start" <| fun _ ->
             let s = ConfigurationManager.AppSettings
-            let q = dorequestAsync s.["urchin.hostport"] s.["urchin.login"] s.["urchin.password"] |> Async.RunSynchronously
+            let q = dorequestAsync hostport login password |> Async.RunSynchronously
             printfn "%s" q
+    ]
 
+let integrationTests = 
+    let s = ConfigurationManager.AppSettings
+    pintegrationTests s.["urchin.hostport"] s.["urchin.login"] s.["urchin.password"]
+
+let tests = 
+    TestList [
         testCase "parse accountlist" <| fun _ ->
             let rawXml = @"<tns:getAccountListResponse xmlns:tns='https://urchin.com/api/urchin/v1/'>
-  <account>
-    <accountId>1</accountId>
-    <accountName>(NONE)</accountName>
-  </account>
-</tns:getAccountListResponse>"
+              <account>
+                <accountId>1</accountId>
+                <accountName>(NONE)</accountName>
+              </account>
+            </tns:getAccountListResponse>"
             let xml = XDocument.Parse rawXml
             let result = parseAccounts xml |> Seq.toList
             Assert.Equal("account count", 1, result.Length)
@@ -58,7 +65,35 @@ let tests =
                   Contact = Some "SOAP Administrator Account"
                   Email = Some "administrator@urchin.com" }, 
                 result.[1])
+
+        testCase "parse profiles" <| fun _ ->
+            let rawXml = @"<tns:getProfileListResponse xmlns:tns='https://urchin.com/api/urchin/v1/'>
+             <profile>
+                <accountId>1</accountId>
+                <accountName>(NONE)</accountName>
+                <profileId>1</profileId>
+                <profileName>tets.profile</profileName>
+             </profile>
+             <profile>
+                <accountId>1</accountId>
+                <accountName>(NONE)</accountName>
+                <profileId>3</profileId>
+                <profileName>ttets.profile (utm)</profileName>
+             </profile>
+          </tns:getProfileListResponse>"
+            let xml = XDocument.Parse rawXml
+            let result = parseProfiles xml |> Seq.toList
+            Assert.Equal("profile count", 2, result.Length)
+            match result.[0] with
+            | { Profile.Id = 1; Name = "tets.profile" } -> ()
+            | x -> failtestf "Unexpected %A" x
+            match result.[1] with
+            | { Profile.Id = 3; Name = "ttets.profile (utm)" } -> ()
+            | x -> failtestf "Unexpected %A" x
+
     ]
 
 [<EntryPoint>]
-let main _ = run tests
+let main _ = 
+    run tests 
+    //+ run integrationTests

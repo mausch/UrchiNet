@@ -11,6 +11,6 @@ module Xml =
         e.Element(XName.Get n)
 
     let tryElement (n: string) (e: XContainer) =
-        element n e |> nullToOption
+        element n e |> Option.fromNull
 
     let value (n: XElement) = n.Value

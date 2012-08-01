@@ -3,6 +3,7 @@
 [<AutoOpen>]
 module Functions =
     open System
+    open System.Globalization
     open System.Xml
     open System.Xml.Linq
     open System.IO
@@ -126,6 +127,13 @@ module Functions =
         | Table.TransactionId -> 257
         | Table.Aggregates -> 258
 
+    let commandService =
+        function
+        | Command.AccountList -> "adminservice/accounts"
+        | Command.ProfileList _ -> "adminservice/profiles"
+        | Command.TableList _ -> "reportservice/tables"
+        | Command.Data _ -> "reportservice/data"
+
     let newHttpRequest (uri: string) =
         WebRequest.Create uri :?> HttpWebRequest
 
@@ -140,8 +148,45 @@ module Functions =
     let parseAccounts (x: XDocument) =
         x.Root.Elements() |> Seq.map parseAccount
 
-    let dorequestAsync urchinUrl login password =
-        let url = sprintf "http://%s/services/v1/adminservice/accounts/?login=%s&password=%s" urchinUrl login password
+    let parseProfile (x: XElement) =
+        let elementValue n = x |> Xml.element n |> Xml.value
+        { Profile.Id = elementValue "profileId" |> int
+          Name = elementValue "profileName"
+          Account = parseAccount x }
+
+    let parseProfiles (x: XDocument) =
+        x.Root.Elements() |> Seq.map parseProfile
+
+    let serializeDate (t: DateTime) =
+        t.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+
+    let dimensionToString (d: Dimension) =
+        (sprintf "%A" d).ToLowerInvariant()
+
+    let metricToString (m: Metric) =
+        (sprintf "%A" m).ToLowerInvariant()
+
+    let serializeDataParameters (x: DataParameters) =
+        [ [ "ids", x.ProfileId.ToString() ]
+          x.StartIndex |> Option.map (fun a -> "start-index",a.ToString()) |> Option.toList
+          x.MaxResults |> Option.map (fun a -> "max-results",a.ToString()) |> Option.toList
+          [ "start-date", serializeDate x.StartDate ]
+          [ "end-date", serializeDate x.EndDate ]
+          [ "dimensions", NonEmptyList.toSeq x.Dimensions |> Seq.map dimensionToString |> String.concat "," ]
+          [ "metrics", x.Metrics |> Seq.map metricToString |> String.concat "," ]
+          // sort
+          // filters
+          x.Table |> Option.map (fun t -> "table", (tableId t).ToString()) |> Option.toList
+        ] |> Seq.concat
+          
+
+    let serializeParameters x = 
+        x 
+        |> Seq.map (fun (k,v) -> sprintf "%s=%s" (Uri.EscapeDataString k) (Uri.EscapeDataString v))
+        |> String.concat "&"
+
+    let dorequestAsync urchinHost login password service parameters =
+        let url = sprintf "http://%s/services/v1/%s/?login=%s&password=%s&%s" urchinHost service login password (serializeParameters parameters)
         let request = newHttpRequest url
         async {
             use! response = request.AsyncGetResponse()
