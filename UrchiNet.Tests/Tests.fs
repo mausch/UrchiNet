@@ -9,7 +9,7 @@ let pintegrationTests hostport login password =
     testList "integration" [
         testCase "start" <| fun _ ->
             let s = ConfigurationManager.AppSettings
-            let q = dorequestAsync hostport login password |> Async.RunSynchronously
+            let q = dorequestAsync hostport login password "adminservice/accounts" [] |> Async.RunSynchronously
             printfn "%s" q
     ]
 
