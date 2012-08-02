@@ -28,53 +28,55 @@ IntelliFactory at http://intellifactory.com/contact.
     <BuildMagicNuGetUrl Condition="'$(BuildMagicNuGetUrl)' == ''">http://nuget.org/api/v1/package/NuGet.CommandLine/$(BuildMagicNuGetVersion)</BuildMagicNuGetUrl>
     <BuildMagicNuGetFolder Condition="'$(BuildMagicNuGetFolder)' == ''">$(MSBuildThisFileDirectory)/bin</BuildMagicNuGetFolder>
     <BuildMagicNuGetLocation Condition="'$(BuildMagicNuGetLocation)' == ''">$(BuildMagicNuGetFolder)/NuGet.exe</BuildMagicNuGetLocation>
+    <BuildMagicLock Condition="'$(BuildMagicLock)' == ''">$(MSBuildThisFileDirectory)/BuildMagic.lock</BuildMagicLock>
     <BuildMagicPackagesConfig Condition="'$(BuildMagicPackagesConfig)' == ''">$(MSBuildProjectDirectory)/packages.config</BuildMagicPackagesConfig>
     <BuildMagicSources Condition="'$(BuildMagicSources)' == ''"></BuildMagicSources>
     <BuildMagicPackages Condition="'$(BuildMagicPackages)' == ''">$(MSBuildThisFileDirectory)/../packages</BuildMagicPackages>
     <BuildDependsOn>BuildMagicRestore;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 
-  <UsingTask TaskName="BuildMagicDownload" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.v4.0.dll" >
+  <UsingTask TaskName="BuildMagicDownloadAndExtract" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.v4.0.dll" >
     <ParameterGroup>
       <Address ParameterType="System.String" Required="true" />
-      <DestinationFile ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-          using (var client = new System.Net.WebClient())
-          {
-            Directory.CreateDirectory(Path.GetDirectoryName(DestinationFile));
-            client.DownloadFile(Address, DestinationFile);
-            return true;
-          }
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
-  <UsingTask TaskName="BuildMagicExtract" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.v4.0.dll" >
-    <ParameterGroup>
       <ZipFile ParameterType="System.String" Required="true" />
       <PathInZipFile ParameterType="System.String" Required="true" />
       <DestinationFile ParameterType="System.String" Required="true" />
+      <LockFile ParameterType="System.String" Required="true" />
     </ParameterGroup>
     <Task>
       <Reference Include="WindowsBase" />
+      <Using Namespace="System.Threading"/>
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-          using (var pkg = System.IO.Packaging.ZipPackage.Open(ZipFile, FileMode.Open))
-          {
-            var part = pkg.GetParts().First(x => x.Uri.ToString() == PathInZipFile);
-            using (var stream = part.GetStream(FileMode.Open))
+          var locked = false;
+          while (File.Exists(LockFile)) {
+            locked = true;
+            Thread.Sleep(500);
+          }
+          if (locked) return true;
+
+          try {
+            File.WriteAllText(LockFile, "");
+            using (var client = new System.Net.WebClient())
             {
-              Directory.CreateDirectory(Path.GetDirectoryName(DestinationFile));
-              using (var output = File.Open(DestinationFile, FileMode.Create))
-              {
-                stream.CopyTo(output);
-              }
+              Directory.CreateDirectory(Path.GetDirectoryName(ZipFile));
+              client.DownloadFile(Address, ZipFile);
             }
-            return true;
+            using (var pkg = System.IO.Packaging.ZipPackage.Open(ZipFile, FileMode.Open))
+            {
+              var part = pkg.GetParts().First(x => x.Uri.ToString() == PathInZipFile);
+              using (var stream = part.GetStream(FileMode.Open))
+              {
+                Directory.CreateDirectory(Path.GetDirectoryName(DestinationFile));
+                using (var output = File.Open(DestinationFile, FileMode.Create))
+                {
+                  stream.CopyTo(output);
+                }
+              }
+              return true;
+            }
+          } finally {
+            File.Delete(LockFile);
           }
         ]]>
       </Code>
@@ -85,8 +87,7 @@ IntelliFactory at http://intellifactory.com/contact.
     <PropertyGroup>
       <BuildMagicNuGetZip>$(BuildMagicNuGetLocation).zip</BuildMagicNuGetZip>
     </PropertyGroup>
-    <BuildMagicDownload Address="$(BuildMagicNuGetUrl)" DestinationFile="$(BuildMagicNuGetZip)" />
-    <BuildMagicExtract ZipFile="$(BuildMagicNuGetZip)" PathInZipFile="/tools/NuGet.exe" DestinationFile="$(BuildMagicNuGetLocation)" />
+    <BuildMagicDownloadAndExtract Address="$(BuildMagicNuGetUrl)" ZipFile="$(BuildMagicNuGetZip)" PathInZipFile="/tools/NuGet.exe" DestinationFile="$(BuildMagicNuGetLocation)" LockFile="$(BuildMagicLock)"/>
   </Target>
 
   <Target Name="BuildMagicRestore" Condition="Exists('$(BuildMagicPackagesConfig)')" DependsOnTargets="BuildMagicInstallNuget">
