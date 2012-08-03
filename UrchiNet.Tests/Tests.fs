@@ -91,6 +91,43 @@ let tests =
             | { Profile.Id = 3; Name = "ttets.profile (utm)" } -> ()
             | x -> failtestf "Unexpected %A" x
 
+        testCase "parse data" <| fun _ -> 
+            let rawXml = @"<tns:getDataResponse xmlns:tns='https://urchin.com/api/urchin/v1/'>
+  <record>
+    <recordId>1</recordId>
+    <dimensions>
+      <dimension name='u:robot_agent'>Mozilla Compatible Agent</dimension>
+      <dimension name='u:cs_useragent'>Mozilla/5.0+(compatible;+YandexBot/3.0;++http://yandex.com/bots)</dimension>
+    </dimensions>
+    <metrics>
+      <u:validhits xmlns:u='https://urchin.com/api/urchin/v1/'>407966</u:validhits>
+    </metrics>
+  </record>
+  <record>
+    <recordId>2</recordId>
+    <dimensions>
+      <dimension name='u:robot_agent'>Googlebot</dimension>
+      <dimension name='u:cs_useragent'>Mozilla/5.0+(compatible;+Googlebot/2.1;++http://www.google.com/bot.html)</dimension>
+    </dimensions>
+    <metrics>
+      <u:validhits xmlns:u='https://urchin.com/api/urchin/v1/'>4126139</u:validhits>
+    </metrics>
+  </record>
+</tns:getDataResponse>"
+            let xml = XDocument.Parse rawXml
+            let result = parseData xml |> Seq.toList
+            Assert.Equal("record count", 2, result.Length)
+            Assert.Equal("first record dimensions",
+                [ Dimension.Robot_agent, "Mozilla Compatible Agent"
+                  Dimension.Cs_useragent, "Mozilla/5.0+(compatible;+YandexBot/3.0;++http://yandex.com/bots)" ],
+                result.[0].Dimensions)
+            Assert.Equal("first record metrics", [Metric.ValidHits, 407966], result.[0].Metrics)
+            Assert.Equal("second record dimensions",
+                [ Dimension.Robot_agent, "Googlebot"
+                  Dimension.Cs_useragent, "Mozilla/5.0+(compatible;+Googlebot/2.1;++http://www.google.com/bot.html)" ],
+                result.[1].Dimensions)
+            Assert.Equal("second record metrics", [Metric.ValidHits, 4126139], result.[1].Metrics)
+            ()
     ]
 
 [<EntryPoint>]

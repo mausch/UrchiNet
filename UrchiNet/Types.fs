@@ -133,6 +133,7 @@ type Dimension =
     | Rev_goal_path_page2
     | Rev_goal_path_page3
 
+/// https://secure.urchin.com/helpwiki/en/Metrics_and_Units_v1.html
 [<RequireQualifiedAccess>]
 type Metric =
     | Hits
@@ -192,3 +193,8 @@ type Command =
     | ProfileList of int
     | TableList of int
     | Data of DataParameters
+
+type DataRecord = {
+    Dimensions: (Dimension * string) list
+    Metrics: (Metric * int) list
+}
