@@ -208,34 +208,55 @@ module Functions =
         | "avgsessiontime" -> Some Metric.AvgSessionTime
         | _ -> None
 
-    let parseDimension e =
-        let name = Xml.getAttr e |> List.find (fst >> (=) "name") |> snd
-        let name = name.Split(':').[1]
+    let removePrefix (name: string) = name.Split(':').[1]
+
+    let parseDimensionValue e =
+        let name = Xml.getAttr e |> List.find (fst >> (=) "name") |> snd |> removePrefix
         dimensionFromString name
         |> Option.map (fun d -> d,e.Value)
 
-    let parseDimensions x =
+    let parseDimensionValues x =
         Xml.elements "dimension" x
-        |> Seq.choose parseDimension
+        |> Seq.choose parseDimensionValue
 
-    let parseMetric (e: XElement) = 
+    let parseMetricValue (e: XElement) = 
         metricFromString e.Name.LocalName
         |> Option.bind (fun m -> 
                         Int32.parse e.Value
                         |> Option.map (fun v -> m,v))
 
-    let parseMetrics (x: XElement) =
-        x.Elements() |> Seq.choose parseMetric
+    let parseMetricValues (x: XElement) =
+        x.Elements() |> Seq.choose parseMetricValue
 
     let parseDatum (x: XElement) =
-        let tryElement n = Xml.tryElement n x
         let parseSubElement name parser = 
-            tryElement name |> Option.map parser |> Option.toList |> List.concat
-        { DataRecord.Dimensions = parseSubElement "dimensions" (parseDimensions >> Seq.toList)
-          Metrics = parseSubElement "metrics" (parseMetrics >> Seq.toList) }
+            Xml.tryElement name x |> Option.map parser |> Option.toList |> List.concat
+        { DataRecord.Dimensions = parseSubElement "dimensions" (parseDimensionValues >> Seq.toList)
+          Metrics = parseSubElement "metrics" (parseMetricValues >> Seq.toList) }
 
     let parseData (x: XDocument) =
         x.Root.Elements() |> Seq.map parseDatum
+
+    let parseTable (x: XElement) =
+        let tableId = Xml.element "tableId" x |> Xml.value |> int
+        let dimensions = 
+            Xml.element "dimensions" x 
+            |> Xml.elements "dimension" 
+            |> Seq.map (Xml.value >> removePrefix)
+            |> Seq.choose dimensionFromString
+            |> Seq.toList
+        let metrics = 
+            Xml.element "metrics" x
+            |> Xml.elements "metric"
+            |> Seq.map (Xml.value >> removePrefix)
+            |> Seq.choose metricFromString
+            |> Seq.toList
+        { TableDefinition.Id = tableId
+          Dimensions = dimensions
+          Metrics = metrics }
+
+    let parseTables (x: XDocument) =
+        x.Root.Elements() |> Seq.map parseTable
 
     let serializeDataParameters (x: DataParameters) =
         [ [ "ids", x.ProfileId.ToString() ]
@@ -260,15 +281,30 @@ module Functions =
         | Command.AccountList -> commandService x, []
         | Command.ProfileList accountId -> commandService x, ["accountId", accountId.ToString()]
         | Command.TableList profileId -> commandService x, ["profileId", profileId.ToString()]
-        | Command.Data data -> commandService x, serializeDataParameters data
+        | Command.Data data -> commandService x, serializeDataParameters data    
 
-    let dorequestAsync urchinHost login password service parameters =
-        let url = sprintf "http://%s/services/v1/%s/?login=%s&password=%s&%s" urchinHost service login password (serializeParameters parameters)
+    let doRequest (service, parameters) (config: Config) =
+        let url = sprintf "http://%s/services/v1/%s/?login=%s&password=%s&%s" config.Host service config.Login config.Password (serializeParameters parameters)
         let request = newHttpRequest url
         async {
             use! response = request.AsyncGetResponse()
             use responseStream = response.GetResponseStream()
             use xmlReader = new XmlTextReader(responseStream)
-            let xdoc = XDocument.Load xmlReader
-            return xdoc.ToString()
+            return XDocument.Load xmlReader
         }
+
+    let getAccountList config = 
+        let cmdp = serializeCommand Command.AccountList
+        doRequest cmdp config |> Async.map parseAccounts
+
+    let getProfileList config accountId = 
+        let cmdp = serializeCommand (Command.ProfileList accountId) 
+        doRequest cmdp config |> Async.map parseProfiles
+
+    let getTableList config profileId =
+        let cmdp = serializeCommand (Command.TableList profileId)
+        doRequest cmdp config |> Async.map parseTables
+
+    let getData config query =
+        let cmdp = serializeCommand (Command.Data query)
+        doRequest cmdp config |> Async.map parseData

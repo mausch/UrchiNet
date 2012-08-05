@@ -198,3 +198,15 @@ type DataRecord = {
     Dimensions: (Dimension * string) list
     Metrics: (Metric * int) list
 }
+
+type TableDefinition = {
+    Id: int
+    Dimensions: Dimension list
+    Metrics: Metric list
+}
+
+type Config = {
+    Host: string
+    Login: string
+    Password: string
+}

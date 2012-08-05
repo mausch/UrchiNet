@@ -5,17 +5,20 @@ open System.Xml.Linq
 open Fuchu
 open UrchiNet
 
-let pintegrationTests hostport login password = 
+let pintegrationTests (config: Config) = 
     testList "integration" [
         testCase "start" <| fun _ ->
-            let s = ConfigurationManager.AppSettings
-            let q = dorequestAsync hostport login password "adminservice/accounts" [] |> Async.RunSynchronously
-            printfn "%s" q
+            let q = doRequest ("adminservice/accounts", []) config |> Async.RunSynchronously
+            printfn "%s" (q.ToString())
     ]
 
 let integrationTests = 
     let s = ConfigurationManager.AppSettings
-    pintegrationTests s.["urchin.hostport"] s.["urchin.login"] s.["urchin.password"]
+    let config = 
+        { Config.Host = s.["urchin.hostport"] 
+          Login = s.["urchin.login"] 
+          Password = s.["urchin.password"] }
+    pintegrationTests config
 
 let tests = 
     TestList [
@@ -127,7 +130,47 @@ let tests =
                   Dimension.Cs_useragent, "Mozilla/5.0+(compatible;+Googlebot/2.1;++http://www.google.com/bot.html)" ],
                 result.[1].Dimensions)
             Assert.Equal("second record metrics", [Metric.ValidHits, 4126139], result.[1].Metrics)
-            ()
+            
+        testCase "parse tables" <| fun _ ->
+            let rawXml = @"<tns:getTableListResponse xmlns:tns='https://urchin.com/api/urchin/v1/'>
+    <table>
+        <tableId>1</tableId>
+        <dimensions>
+            <dimension>u:utm_source</dimension>
+            <dimension>u:utm_medium</dimension>
+            <dimension>u:utm_campaign</dimension>
+        </dimensions>
+        <metrics>
+            <metric>u:pages</metric>
+            <metric>u:visits</metric>
+            <metric>u:transactions</metric>
+            <metric>u:revenue</metric>
+            <metric>u:responses</metric>
+            <metric>u:impressions</metric>
+            <metric>u:clicks</metric>
+            <metric>u:cost</metric>
+            <metric>u:goals1</metric>
+            <metric>u:goals2</metric>
+            <metric>u:goals3</metric>
+            <metric>u:goals4</metric>
+        </metrics>
+    </table>
+</tns:getTableListResponse>"
+            let xml = XDocument.Parse rawXml
+            let tables = parseTables xml |> Seq.toList
+            Assert.Equal("table count", 1, tables.Length)
+            let table = tables.[0]
+            Assert.Equal("table id", 1, table.Id)
+            Assert.Equal("dimension count", 3, table.Dimensions.Length)
+            Assert.Equal("metric count", 12, table.Metrics.Length)
+            Assert.Equal("dimensions", 
+                [ Dimension.Utm_source; Dimension.Utm_medium; Dimension.Utm_campaign ],
+                table.Dimensions)
+            Assert.Equal("metrics",
+                [ Metric.Pages; Metric.Visits; Metric.Transactions; Metric.Revenue;
+                  Metric.Responses; Metric.Impressions; Metric.Clicks; Metric.Cost; 
+                  Metric.Goals1; Metric.Goals2; Metric.Goals3; Metric.Goals4; ],
+                table.Metrics)
     ]
 
 [<EntryPoint>]

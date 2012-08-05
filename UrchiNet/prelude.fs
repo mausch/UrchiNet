@@ -20,3 +20,8 @@ module Helpers =
             | null -> None
             | x -> Some x
 
+    module Async =
+        let map f x = async {
+            let! a = x
+            return f a
+        }
