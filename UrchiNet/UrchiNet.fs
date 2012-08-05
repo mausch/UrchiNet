@@ -295,18 +295,17 @@ module Functions =
             return XDocument.Load xmlReader
         }
 
-    let getAccountList config = 
-        let cmdp = serializeCommand Command.AccountList
-        doRequest cmdp config |> Async.map parseAccounts
+    let sendCommand (cmd, parser) config = 
+        let cmdp = serializeCommand cmd
+        doRequest cmdp config |> Async.map parser
+
+    let getAccountList = sendCommand (Command.AccountList, parseAccounts)
 
     let getProfileList config accountId = 
-        let cmdp = serializeCommand (Command.ProfileList accountId) 
-        doRequest cmdp config |> Async.map parseProfiles
+        sendCommand (Command.ProfileList accountId, parseProfiles) config
 
     let getTableList config profileId =
-        let cmdp = serializeCommand (Command.TableList profileId)
-        doRequest cmdp config |> Async.map parseTables
+        sendCommand (Command.TableList profileId, parseTables) config
 
     let getData config query =
-        let cmdp = serializeCommand (Command.Data query)
-        doRequest cmdp config |> Async.map parseData
+        sendCommand (Command.Data query, parseData) config

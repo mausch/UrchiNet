@@ -40,6 +40,7 @@
     <Compile Include="Xml.fs" />
     <Compile Include="Types.fs" />
     <Compile Include="UrchiNet.fs" />
+    <Compile Include="CSharp.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
