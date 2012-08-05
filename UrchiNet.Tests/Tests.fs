@@ -34,11 +34,15 @@ let pintegrationTests (config: Config) =
     ]
 
 let integrationTests = 
-    let s = ConfigurationManager.AppSettings
+    let getOrThrow (key: string) = 
+        let r = ConfigurationManager.AppSettings.[key]
+        if String.IsNullOrEmpty r
+            then failwithf "Configure %s in your app.config" key
+            else r
     let config = 
-        { Config.Host = s.["urchin.hostport"] 
-          Login = s.["urchin.login"] 
-          Password = s.["urchin.password"] }
+        { Config.Host = getOrThrow "urchin.hostport"
+          Login = getOrThrow "urchin.login"
+          Password = getOrThrow "urchin.password" }
     pintegrationTests config
 
 let tests = 
