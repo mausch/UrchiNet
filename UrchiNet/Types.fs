@@ -185,7 +185,16 @@ type DataParameters = {
     // Sort
     // Filters
     Table: Table option
-}
+} with
+    static member Create(profileId, startDate, endDate, dimensions) =
+        { DataParameters.ProfileId = profileId
+          StartIndex = None
+          MaxResults = None
+          StartDate = startDate
+          EndDate = endDate
+          Dimensions = dimensions
+          Metrics = []
+          Table = None }
 
 [<RequireQualifiedAccess>]
 type Command =

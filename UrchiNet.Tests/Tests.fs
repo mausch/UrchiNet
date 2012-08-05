@@ -7,9 +7,27 @@ open UrchiNet
 
 let pintegrationTests (config: Config) = 
     testList "integration" [
-        testCase "start" <| fun _ ->
+        testCase "accounts request" <| fun _ ->
             let q = doRequest ("adminservice/accounts", []) config |> Async.RunSynchronously
             printfn "%s" (q.ToString())
+
+        testCase "accounts" <| fun _ ->
+            let r = getAccountList config |> Async.RunSynchronously |> Seq.toList
+            printfn "%A" r
+
+        testCase "profiles" <| fun _ ->
+            let r = getProfileList config 1 |> Async.RunSynchronously |> Seq.toList
+            printfn "%A" r
+
+        testCase "data 1" <| fun _ ->
+            let query = 
+                DataParameters.Create(profileId = 1, 
+                                      startDate = DateTime.Now.AddDays(-7.0),
+                                      endDate = DateTime.Now,
+                                      dimensions = NonEmptyList.create Dimension.Browser_base [])
+            let r = getData config query |> Async.RunSynchronously |> Seq.toList
+            printfn "%A" r
+
     ]
 
 let integrationTests = 
