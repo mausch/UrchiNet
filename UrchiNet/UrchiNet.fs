@@ -58,9 +58,9 @@ module Functions =
 
     let commandService =
         function
-        | Command.AccountList -> "adminservice/accounts"
-        | Command.ProfileList _ -> "adminservice/profiles"
-        | Command.TableList _ -> "reportservice/tables"
+        | Command.AccountList -> "adminservice/accounts/"
+        | Command.ProfileList _ -> "adminservice/profiles/"
+        | Command.TableList _ -> "reportservice/tables/"
         | Command.Data _ -> "reportservice/data"
 
     let newHttpRequest (uri: string) =
@@ -281,11 +281,13 @@ module Functions =
         | Command.AccountList -> commandService x, []
         | Command.ProfileList accountId -> commandService x, ["accountId", accountId.ToString()]
         | Command.TableList profileId -> commandService x, ["profileId", profileId.ToString()]
-        | Command.Data data -> commandService x, serializeDataParameters data    
+        | Command.Data data -> commandService x, serializeDataParameters data
 
-    let doRequest (service, parameters) (config: Config) =
-        let url = sprintf "http://%s/services/v1/%s/?login=%s&password=%s&%s" config.Host service config.Login config.Password (serializeParameters parameters)
-        let request = newHttpRequest url
+    let buildUrl (service, parameters) (config: Config) =
+        sprintf "http://%s/services/v1/%s?login=%s&password=%s&%s" config.Host service config.Login config.Password (serializeParameters parameters)
+
+    let doRequest service (config: Config) =
+        let request = newHttpRequest (buildUrl service config)
         async {
             use! response = request.AsyncGetResponse()
             use responseStream = response.GetResponseStream()

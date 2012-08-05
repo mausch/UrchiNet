@@ -8,26 +8,29 @@ open UrchiNet
 let pintegrationTests (config: Config) = 
     testList "integration" [
         testCase "accounts request" <| fun _ ->
-            let q = doRequest ("adminservice/accounts", []) config |> Async.RunSynchronously
+            let q = doRequest ("adminservice/accounts/", []) config |> Async.RunSynchronously
             printfn "%s" (q.ToString())
 
         testCase "accounts" <| fun _ ->
-            let r = getAccountList config |> Async.RunSynchronously |> Seq.toList
-            printfn "%A" r
+            let results = getAccountList config |> Async.RunSynchronously |> Seq.toList
+            Seq.iter (printfn "%A") results
 
         testCase "profiles" <| fun _ ->
-            let r = getProfileList config 1 |> Async.RunSynchronously |> Seq.toList
-            printfn "%A" r
+            let results = getProfileList config 1 |> Async.RunSynchronously |> Seq.toList
+            Seq.iter (printfn "%A") results
 
         testCase "data 1" <| fun _ ->
             let query = 
                 DataParameters.Create(profileId = 1, 
                                       startDate = DateTime.Now.AddDays(-7.0),
                                       endDate = DateTime.Now,
-                                      dimensions = NonEmptyList.create Dimension.Browser_base [])
-            let r = getData config query |> Async.RunSynchronously |> Seq.toList
-            printfn "%A" r
-
+                                      dimensions = NonEmptyList.create Dimension.Browser_base [],
+                                      table = Table.BrowserPlatformConnectionSpeed1)
+            
+            let url = buildUrl (serializeCommand (Command.Data query)) config
+            printfn "%s" url
+            let results = getData config query |> Async.RunSynchronously |> Seq.toList
+            Seq.iter (printfn "%A") results
     ]
 
 let integrationTests = 
@@ -193,5 +196,5 @@ let tests =
 
 [<EntryPoint>]
 let main _ = 
-    run tests 
-    //+ run integrationTests
+    //run tests 
+    run integrationTests

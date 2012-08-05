@@ -186,15 +186,15 @@ type DataParameters = {
     // Filters
     Table: Table option
 } with
-    static member Create(profileId, startDate, endDate, dimensions) =
+    static member Create(profileId, startDate, endDate, dimensions, ?startIndex, ?maxResults, ?metrics, ?table) =
         { DataParameters.ProfileId = profileId
-          StartIndex = None
-          MaxResults = None
+          StartIndex = startIndex
+          MaxResults = maxResults
           StartDate = startDate
           EndDate = endDate
           Dimensions = dimensions
-          Metrics = []
-          Table = None }
+          Metrics = defaultArg metrics []
+          Table = table }
 
 [<RequireQualifiedAccess>]
 type Command =
