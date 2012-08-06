@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>UrchiNet</id>
+    <version>0.1.0</version>
+    <authors>Mauricio Scheffer</authors>
+    <licenseUrl>https://raw.github.com/mausch/UrchiNet/master/license.txt</licenseUrl>
+    <projectUrl>https://github.com/mausch/UrchiNet</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Urchin API v1 client</description>
+    <copyright>Copyright Mauricio Scheffer 2012</copyright>
+    <tags>urchin analytics</tags>
+    <dependencies>
+      <dependency id="FSharp.Core" version="[2.0.0.0]"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="UrchiNet\bin\Release\UrchiNet.*" target="lib\net35"/>
+  </files>
+</package>
