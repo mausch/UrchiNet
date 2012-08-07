@@ -89,8 +89,7 @@ module Functions =
     let serializeDate (t: DateTime) =
         t.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
 
-    let dimensionToString (d: Dimension) =
-        (sprintf "%A" d).ToLowerInvariant()
+    let dimensionToString (d: Dimension) = d.ToString()
 
     let dimensionFromString =
         function
@@ -164,8 +163,7 @@ module Functions =
         | "rev_goal_path_page3" -> Some Dimension.Rev_goal_path_page3
         | _ -> None
 
-    let metricToString (m: Metric) =
-        (sprintf "%A" m).ToLowerInvariant()
+    let metricToString (m: Metric) = m.ToString()
 
     let metricFromString =
         function

@@ -1,6 +1,7 @@
 ﻿namespace UrchiNet
 
 open System
+open System.Runtime.InteropServices
 
 type Account = {
     Id: int
@@ -132,6 +133,9 @@ type Dimension =
     | Rev_goal_path_page1
     | Rev_goal_path_page2
     | Rev_goal_path_page3
+    with 
+        override x.ToString() =
+            (sprintf "%A" x).ToLowerInvariant()
 
 /// https://secure.urchin.com/helpwiki/en/Metrics_and_Units_v1.html
 [<RequireQualifiedAccess>]
@@ -173,6 +177,9 @@ type Metric =
     | GoalStarts4
     | Score
     | AvgSessionTime
+    with
+        override x.ToString() =
+            (sprintf "%A" x).ToLowerInvariant()
 
 type DataParameters = {
     ProfileId: int
@@ -186,7 +193,7 @@ type DataParameters = {
     // Filters
     Table: Table option
 } with
-    static member Create(profileId, startDate, endDate, dimensions, ?startIndex, ?maxResults, ?metrics, ?table) =
+    static member Create(profileId, startDate, endDate, dimensions, [<Optional; DefaultParameterValueAttribute(null)>] ?startIndex, [<Optional; DefaultParameterValueAttribute(null)>] ?maxResults, [<Optional; DefaultParameterValueAttribute(null)>] ?metrics, [<Optional; DefaultParameterValueAttribute(null)>] ?table) =
         { DataParameters.ProfileId = profileId
           StartIndex = startIndex
           MaxResults = maxResults

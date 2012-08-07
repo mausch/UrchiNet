@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Configuration;
+using System.Linq;
 using Fuchu;
+using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 
 namespace UrchiNet.CSharpTests {
     public class Program {
@@ -23,6 +26,19 @@ namespace UrchiNet.CSharpTests {
                     foreach (var account in service.GetAccountList())
                         Console.WriteLine(account.Name);
                 }), 
+
+                Test.Case("Query data", () => {
+                    var query = DataParameters.Create(profileId: 1, 
+                        startDate: DateTime.Now, 
+                        endDate: DateTime.Now, 
+                        dimensions: NonEmptyList.Singleton(Dimension.Browser_base),
+                        table: FSharpOption<Table>.Some(Table.BrowserPlatformConnectionSpeed1));
+                    var results = service.GetData(query).ToList();
+                    foreach (var record in results) {
+                        foreach (var dimension in record.Dimensions)
+                            Console.WriteLine(dimension.Item1.ToString());
+                    }
+                })
             });
         }
 
