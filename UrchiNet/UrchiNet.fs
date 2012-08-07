@@ -300,13 +300,17 @@ module Impl =
 module Functions =
     open Impl
 
+    /// Retrieves the list of accounts for an authenticated user. 
     let getAccountList = sendCommand (Command.AccountList, parseAccounts)
 
+    /// Retrieves a list of profiles for an authenticated user and account.
     let getProfileList config accountId = 
         sendCommand (Command.ProfileList accountId, parseProfiles) config
 
+    /// Retrieves list of tables for a specified profile. 
     let getTableList config profileId =
         sendCommand (Command.TableList profileId, parseTables) config
 
+    /// Retrieves data for the specified dimensions/metrics
     let getData config query =
         sendCommand (Command.Data query, parseData) config
