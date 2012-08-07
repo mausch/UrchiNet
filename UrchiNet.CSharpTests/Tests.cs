@@ -26,6 +26,19 @@ namespace UrchiNet.CSharpTests {
                         Console.WriteLine(account.Name);
                 }), 
 
+                Test.Case("Get profiles", () => {
+                    var profiles = service.GetProfileList(1).ToList();
+                    foreach (var profile in profiles)
+                        Console.WriteLine(profile.Name);
+                }),
+
+                Test.Case("Get tables", () => {
+                    var tables = service.GetTableList(1).ToList();
+                    foreach (var table in tables)
+                        foreach (var dimension in table.Dimensions)
+                            Console.WriteLine(dimension.ToString());
+                }),
+
                 Test.Case("Query data", () => {
                     var query = Query.Create(profileId: 1, 
                         startDate: DateTime.Now, 
