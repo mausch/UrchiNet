@@ -4,6 +4,7 @@ open System.Xml
 open System.Xml.Linq
 open Fuchu
 open UrchiNet
+open UrchiNet.Impl
 
 let pintegrationTests (config: Config) = 
     testList "integration" [

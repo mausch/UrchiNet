@@ -1,7 +1,6 @@
 ﻿namespace UrchiNet
 
-[<AutoOpen>]
-module Functions =
+module Impl =
     open System
     open System.Globalization
     open System.Xml
@@ -296,6 +295,10 @@ module Functions =
     let sendCommand (cmd, parser) config = 
         let cmdp = serializeCommand cmd
         doRequest cmdp config |> Async.map parser
+
+[<AutoOpen>]
+module Functions =
+    open Impl
 
     let getAccountList = sendCommand (Command.AccountList, parseAccounts)
 
