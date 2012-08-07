@@ -211,7 +211,7 @@ module Functions =
     let parseDimensionValue e =
         let name = Xml.getAttr e |> List.find (fst >> (=) "name") |> snd |> removePrefix
         dimensionFromString name
-        |> Option.map (fun d -> d,e.Value)
+        |> Option.map (fun d -> { DimensionValue.Dimension = d; Value = e.Value })
 
     let parseDimensionValues x =
         Xml.elements "dimension" x
@@ -221,7 +221,7 @@ module Functions =
         metricFromString e.Name.LocalName
         |> Option.bind (fun m -> 
                         Int32.parse e.Value
-                        |> Option.map (fun v -> m,v))
+                        |> Option.map (fun v -> { MetricValue.Metric = m; Value = v }))
 
     let parseMetricValues (x: XElement) =
         x.Elements() |> Seq.choose parseMetricValue

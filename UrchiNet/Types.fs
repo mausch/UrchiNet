@@ -210,9 +210,19 @@ type Command =
     | TableList of int
     | Data of DataParameters
 
+type DimensionValue = { 
+    Dimension: Dimension
+    Value: string 
+}
+
+type MetricValue = {
+    Metric: Metric
+    Value: int
+}
+
 type DataRecord = {
-    Dimensions: (Dimension * string) list
-    Metrics: (Metric * int) list
+    Dimensions: DimensionValue list
+    Metrics: MetricValue list
 }
 
 type TableDefinition = {

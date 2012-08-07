@@ -2,7 +2,6 @@
 using System.Configuration;
 using System.Linq;
 using Fuchu;
-using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 
 namespace UrchiNet.CSharpTests {
@@ -36,7 +35,7 @@ namespace UrchiNet.CSharpTests {
                     var results = service.GetData(query).ToList();
                     foreach (var record in results) {
                         foreach (var dimension in record.Dimensions)
-                            Console.WriteLine(dimension.Item1.ToString());
+                            Console.WriteLine(dimension.Dimension.ToString());
                     }
                 })
             });
