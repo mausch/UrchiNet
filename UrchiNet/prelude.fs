@@ -13,15 +13,3 @@ module Helpers =
             
         static member parse x = 
             Int32.parseWithOptions NumberStyles.Integer CultureInfo.InvariantCulture x
-
-    module Option =
-        let fromNull =
-            function 
-            | null -> None
-            | x -> Some x
-
-    module Async =
-        let map f x = async {
-            let! a = x
-            return f a
-        }

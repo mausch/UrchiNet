@@ -284,8 +284,8 @@ module Impl =
         sprintf "http://%s/services/v1/%s?login=%s&password=%s&%s" config.Host service config.Login config.Password (serializeParameters parameters)
 
     let doRequest service (config: Config) =
-        let request = newHttpRequest (buildUrl service config)
         async {
+            let request = newHttpRequest (buildUrl service config)
             use! response = request.AsyncGetResponse()
             use responseStream = response.GetResponseStream()
             use xmlReader = new XmlTextReader(responseStream)
@@ -293,8 +293,11 @@ module Impl =
         }
 
     let sendCommand (cmd, parser) config = 
-        let cmdp = serializeCommand cmd
-        doRequest cmdp config |> Async.map parser
+        async {
+            let cmdp = serializeCommand cmd
+            let! response = doRequest cmdp config 
+            return parser response
+        }
 
 [<AutoOpen>]
 module Functions =

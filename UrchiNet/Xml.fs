@@ -11,7 +11,9 @@ module Xml =
         e.Elements(XName.Get n)
 
     let tryElement (n: string) (e: XContainer) =
-        element n e |> Option.fromNull
+        match element n e with
+        | null -> None
+        | x -> Some x
 
     let value (n: XElement) = n.Value
 
