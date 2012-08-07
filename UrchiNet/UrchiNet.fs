@@ -255,7 +255,7 @@ module Impl =
     let parseTables (x: XDocument) =
         x.Root.Elements() |> Seq.map parseTable
 
-    let serializeDataParameters (x: DataParameters) =
+    let serializeDataParameters (x: Query) =
         [ [ "ids", x.ProfileId.ToString() ]
           x.StartIndex |> Option.map (fun a -> "start-index",a.ToString()) |> Option.toList
           x.MaxResults |> Option.map (fun a -> "max-results",a.ToString()) |> Option.toList

@@ -309,7 +309,7 @@ type Metric =
         override x.ToString() =
             (sprintf "%A" x).ToLowerInvariant()
 
-type DataParameters = {
+type Query = {
     ProfileId: int
     StartIndex: int option
     MaxResults: int option
@@ -322,7 +322,7 @@ type DataParameters = {
     Table: Table option
 } with
     static member Create(profileId, startDate, endDate, dimensions, [<Optional; DefaultParameterValueAttribute(null)>] ?startIndex, [<Optional; DefaultParameterValueAttribute(null)>] ?maxResults, [<Optional; DefaultParameterValueAttribute(null)>] ?metrics, [<Optional; DefaultParameterValueAttribute(null)>] ?table) =
-        { DataParameters.ProfileId = profileId
+        { Query.ProfileId = profileId
           StartIndex = startIndex
           MaxResults = maxResults
           StartDate = startDate
@@ -336,7 +336,7 @@ type Command =
     | AccountList
     | ProfileList of int
     | TableList of int
-    | Data of DataParameters
+    | Data of Query
 
 type DimensionValue = { 
     Dimension: Dimension

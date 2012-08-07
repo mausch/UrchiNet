@@ -22,7 +22,7 @@ let pintegrationTests (config: Config) =
 
         testCase "data 1" <| fun _ ->
             let query = 
-                DataParameters.Create(profileId = 1, 
+                Query.Create(profileId = 1, 
                                       startDate = DateTime.Now.AddDays(-7.0),
                                       endDate = DateTime.Now,
                                       dimensions = NonEmptyList.create Dimension.Browser_base [],

@@ -27,7 +27,7 @@ namespace UrchiNet.CSharpTests {
                 }), 
 
                 Test.Case("Query data", () => {
-                    var query = DataParameters.Create(profileId: 1, 
+                    var query = Query.Create(profileId: 1, 
                         startDate: DateTime.Now, 
                         endDate: DateTime.Now, 
                         dimensions: NonEmptyList.Singleton(Dimension.Browser_base),
