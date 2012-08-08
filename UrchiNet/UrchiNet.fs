@@ -219,7 +219,7 @@ module Impl =
     let parseMetricValue (e: XElement) = 
         metricFromString e.Name.LocalName
         |> Option.bind (fun m -> 
-                        Int32.parse e.Value
+                        Int64.parse e.Value
                         |> Option.map (fun v -> { MetricValue.Metric = m; Value = v }))
 
     let parseMetricValues (x: XElement) =

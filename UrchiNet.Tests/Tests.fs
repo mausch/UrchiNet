@@ -23,11 +23,24 @@ let pintegrationTests (config: Config) =
         testCase "data 1" <| fun _ ->
             let query = 
                 Query.Create(profileId = 1, 
-                                      startDate = DateTime.Now.AddDays(-7.0),
-                                      endDate = DateTime.Now,
-                                      dimensions = NonEmptyList.create Dimension.Browser_base [],
-                                      table = Table.BrowserPlatformConnectionSpeed1)
+                             startDate = DateTime.Now.AddDays(-7.0),
+                             endDate = DateTime.Now,
+                             dimensions = NonEmptyList.create Dimension.Browser_base [],
+                             table = Table.BrowserPlatformConnectionSpeed1)
             
+            let url = buildUrl (serializeCommand (Command.Data query)) config
+            printfn "%s" url
+            let results = getData config query |> Async.RunSynchronously |> Seq.toList
+            Seq.iter (printfn "%A") results
+
+        testCase "daily bytes" <| fun _ ->
+            let query = 
+                Query.Create(profileId = 1,
+                             startDate = DateTime.Now.AddDays(-7.0),
+                             endDate = DateTime.Now,
+                             dimensions = NonEmptyList.create Dimension.Day [],
+                             metrics = [Metric.Bytes],
+                             table = Table.Aggregates)
             let url = buildUrl (serializeCommand (Command.Data query)) config
             printfn "%s" url
             let results = getData config query |> Async.RunSynchronously |> Seq.toList
@@ -152,12 +165,27 @@ let tests =
                 [ Dimension.Robot_agent, "Mozilla Compatible Agent"
                   Dimension.Cs_useragent, "Mozilla/5.0+(compatible;+YandexBot/3.0;++http://yandex.com/bots)" ],
                 List.map dimensionToTuple result.[0].Dimensions)
-            Assert.Equal("first record metrics", [Metric.ValidHits, 407966], List.map metricToTuple result.[0].Metrics)
+            Assert.Equal("first record metrics", [Metric.ValidHits, 407966L], List.map metricToTuple result.[0].Metrics)
             Assert.Equal("second record dimensions",
                 [ Dimension.Robot_agent, "Googlebot"
                   Dimension.Cs_useragent, "Mozilla/5.0+(compatible;+Googlebot/2.1;++http://www.google.com/bot.html)" ],
                 List.map dimensionToTuple result.[1].Dimensions)
-            Assert.Equal("second record metrics", [Metric.ValidHits, 4126139], List.map metricToTuple result.[1].Metrics)
+            Assert.Equal("second record metrics", [Metric.ValidHits, 4126139L], List.map metricToTuple result.[1].Metrics)
+
+        testCase "parse data 2" <| fun _ ->
+            let rawXml = @"<tns:getDataResponse xmlns:tns='https://urchin.com/api/urchin/v1/'>
+            <record>
+            <recordId>1</recordId>
+            <dimensions><dimension name='u:day'>2012-08-01T00:00:00Z</dimension></dimensions>
+            <metrics><u:bytes xmlns:u='https://urchin.com/api/urchin/v1/'>64991260106</u:bytes></metrics>
+            </record>
+            </tns:getDataResponse>"
+            let xml = XDocument.Parse rawXml
+            let result = parseData xml |> Seq.toList
+            let metricToTuple (x: MetricValue) = x.Metric, x.Value
+            Assert.Equal("record count", 1, result.Length)
+            Assert.Equal("bytes", [Metric.Bytes, 64991260106L], List.map metricToTuple result.[0].Metrics)
+            ()
             
         testCase "parse tables" <| fun _ ->
             let rawXml = @"<tns:getTableListResponse xmlns:tns='https://urchin.com/api/urchin/v1/'>
@@ -203,5 +231,5 @@ let tests =
 
 [<EntryPoint>]
 let main _ = 
-    //run tests 
-    run integrationTests
+    run tests 
+    //run integrationTests

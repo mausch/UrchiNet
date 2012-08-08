@@ -345,7 +345,7 @@ type DimensionValue = {
 
 type MetricValue = {
     Metric: Metric
-    Value: int
+    Value: int64
 }
 
 type DataRecord = {
