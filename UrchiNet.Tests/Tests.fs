@@ -5,6 +5,7 @@ open System.Xml.Linq
 open Fuchu
 open UrchiNet
 open UrchiNet.Impl
+open UrchiNet.Helpers
 
 let pintegrationTests (config: Config) = 
     testList "integration" [
@@ -13,11 +14,11 @@ let pintegrationTests (config: Config) =
             printfn "%s" (q.ToString())
 
         testCase "accounts" <| fun _ ->
-            let results = getAccountList config |> Async.RunSynchronously |> Seq.toList
+            let results = getAccountList config |> Async.RunSynchronously |> Choice.get |> Seq.toList
             Seq.iter (printfn "%A") results
 
         testCase "profiles" <| fun _ ->
-            let results = getProfileList config 1 |> Async.RunSynchronously |> Seq.toList
+            let results = getProfileList config 1 |> Async.RunSynchronously |> Choice.get |> Seq.toList
             Seq.iter (printfn "%A") results
 
         testCase "data 1" <| fun _ ->
@@ -30,7 +31,7 @@ let pintegrationTests (config: Config) =
             
             let url = buildUrl (serializeCommand (Command.Data query)) config
             printfn "%s" url
-            let results = getData config query |> Async.RunSynchronously |> Seq.toList
+            let results = getData config query |> Async.RunSynchronously |> Choice.get |> Seq.toList
             Seq.iter (printfn "%A") results
 
         testCase "daily bytes" <| fun _ ->
@@ -43,7 +44,7 @@ let pintegrationTests (config: Config) =
                              table = Table.Aggregates)
             let url = buildUrl (serializeCommand (Command.Data query)) config
             printfn "%s" url
-            let results = getData config query |> Async.RunSynchronously |> Seq.toList
+            let results = getData config query |> Async.RunSynchronously |> Choice.get |> Seq.toList
             Seq.iter (printfn "%A") results
 
         testCase "Googlebot hits/bytes" <| fun _ ->
@@ -57,7 +58,7 @@ let pintegrationTests (config: Config) =
                                                  Value = "Google" },
                              metrics = [Metric.Bytes; Metric.ValidHits],
                              table = Table.Robot)
-            let results = getData config query |> Async.RunSynchronously |> Seq.toList
+            let results = getData config query |> Async.RunSynchronously |> Choice.get |> Seq.toList
             Seq.iter (printfn "%A") results
     ]
 
@@ -292,7 +293,8 @@ let tests =
                 </soapenv:Fault>
             </soapenv:Body>
             </soapenv:Envelope>"
-            let message = parseErrorMessage rawXml
+            let xml = XDocument.Parse rawXml
+            let message = parseErrorMessage xml
             Assert.Equal("error message", "Ambiguous table, please specify table id explicitly.", message)
     ]
 

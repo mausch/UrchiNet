@@ -22,18 +22,18 @@ namespace UrchiNet.CSharpTests {
 
             return Test.List("C# tests", new[] {
                 Test.Case("Get accounts", () => {
-                    foreach (var account in service.GetAccountList())
+                    foreach (var account in service.GetAccountListOrThrow())
                         Console.WriteLine(account.Name);
                 }), 
 
                 Test.Case("Get profiles", () => {
-                    var profiles = service.GetProfileList(1).ToList();
+                    var profiles = service.GetProfileListOrThrow(1).ToList();
                     foreach (var profile in profiles)
                         Console.WriteLine(profile.Name);
                 }),
 
                 Test.Case("Get tables", () => {
-                    var tables = service.GetTableList(1).ToList();
+                    var tables = service.GetTableListOrThrow(1).ToList();
                     foreach (var table in tables)
                         foreach (var dimension in table.Dimensions)
                             Console.WriteLine(dimension.ToString());
@@ -45,7 +45,7 @@ namespace UrchiNet.CSharpTests {
                         endDate: DateTime.Now, 
                         dimensions: NonEmptyList.Singleton(Dimension.Browser_base),
                         table: FSharpOption<Table>.Some(Table.BrowserPlatformConnectionSpeed1));
-                    var results = service.GetData(query).ToList();
+                    var results = service.GetDataOrThrow(query).ToList();
                     foreach (var record in results) {
                         foreach (var dimension in record.Dimensions)
                             Console.WriteLine(dimension.Dimension.ToString());

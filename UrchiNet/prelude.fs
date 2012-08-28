@@ -5,6 +5,12 @@ module Helpers =
     open System
     open System.Globalization
 
+    module Choice =
+        let get =
+            function
+            | Choice1Of2 ok -> ok
+            | Choice2Of2 error -> failwith error
+
     type Int32 with
         static member parseWithOptions style provider x =
             match Int32.TryParse(x, style, provider) with

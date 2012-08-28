@@ -251,8 +251,7 @@ module Impl =
     let parseTables (x: XDocument) =
         x.Root.Elements() |> Seq.map parseTable
 
-    let parseErrorMessage rawXml = 
-        let xml = XDocument.Parse rawXml
+    let parseErrorMessage (xml: XDocument) = 
         let elementEnv = Xml.elementNS "http://schemas.xmlsoap.org/soap/envelope/"
         let elementTns = Xml.elementNS "https://urchin.com/api/urchin/v1/"
         xml.Root
@@ -303,17 +302,25 @@ module Impl =
     let doRequest service (config: Config) =
         async {
             let request = newHttpRequest (buildUrl service config)
-            use! response = request.AsyncGetResponse()
-            use responseStream = response.GetResponseStream()
-            use xmlReader = new XmlTextReader(responseStream)
-            return XDocument.Load xmlReader
+            try
+                use! response = request.AsyncGetResponse()
+                use responseStream = response.GetResponseStream()
+                use xmlReader = new XmlTextReader(responseStream)
+                return XDocument.Load xmlReader  |> Choice1Of2
+            with :? WebException as e -> 
+                use response = e.Response
+                use responseStream = response.GetResponseStream()
+                use xmlReader = new XmlTextReader(responseStream)
+                return XDocument.Load xmlReader |> Choice2Of2
         }
 
     let sendCommand (cmd, parser) config = 
         async {
             let cmdp = serializeCommand cmd
             let! response = doRequest cmdp config 
-            return parser response
+            match response with
+            | Choice1Of2 ok -> return parser ok |> Choice1Of2
+            | Choice2Of2 error -> return parseErrorMessage error |> Choice2Of2
         }
 
 [<AutoOpen>]
