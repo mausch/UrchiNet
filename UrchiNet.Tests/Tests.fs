@@ -272,9 +272,31 @@ let tests =
                     Assert.Equal("Browser matches 'Firefox'", "u:browser_base=~Firefox", filter.ToString())
             ]
         ]
+
+        testCase "error parsing" <| fun _ ->
+            let rawXml = "<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/'>
+            <soapenv:Header></soapenv:Header>
+            <soapenv:Body>
+                <soapenv:Fault>
+                    <Code><Value>soapenv:Sender</Value></Code>
+                    <Reason><Text xmlns:xml='http://www.w3.org/XML/1998/namespace' xml:lang='en'>ERROR (10005-298-147) Ambiguous table, please specify table id explicitly.</Text></Reason>
+                    <Detail>
+                    <tns:ApiFault xmlns:tns='https://urchin.com/api/urchin/v1/'>
+                        <code>10005</code>
+                        <errors xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:nil='true'></errors>
+                        <internal>0</internal>
+                        <message>Ambiguous table, please specify table id explicitly.</message>
+                        <trigger>none</trigger>
+                    </tns:ApiFault>
+                    </Detail>
+                </soapenv:Fault>
+            </soapenv:Body>
+            </soapenv:Envelope>"
+            let message = parseErrorMessage rawXml
+            Assert.Equal("error message", "Ambiguous table, please specify table id explicitly.", message)
     ]
 
 [<EntryPoint>]
 let main _ = 
-    //run tests 
-    run integrationTests
+    run tests 
+    //run integrationTests

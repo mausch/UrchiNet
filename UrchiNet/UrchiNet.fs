@@ -251,6 +251,18 @@ module Impl =
     let parseTables (x: XDocument) =
         x.Root.Elements() |> Seq.map parseTable
 
+    let parseErrorMessage rawXml = 
+        let xml = XDocument.Parse rawXml
+        let elementEnv = Xml.elementNS "http://schemas.xmlsoap.org/soap/envelope/"
+        let elementTns = Xml.elementNS "https://urchin.com/api/urchin/v1/"
+        xml.Root
+        |> elementEnv "Body" 
+        |> elementEnv "Fault"
+        |> Xml.element "Detail"
+        |> elementTns "ApiFault"
+        |> Xml.element "message"
+        |> Xml.value
+
     let serializeQueryFilters (x: Query) : (string * string) list =
         let toList x = x |> Option.map (fun x -> x.ToString()) |> Option.toList
         let dimension = toList x.DimensionFilter

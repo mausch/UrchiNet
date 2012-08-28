@@ -4,16 +4,26 @@ module Xml =
     open UrchiNet.Helpers
     open System.Xml.Linq
 
+    let tryElement (n: string) (e: XContainer) = 
+        match e.Element(XName.Get n) with
+        | null -> None
+        | x -> Some x
+
     let element (n: string) (e: XContainer) = 
-        e.Element(XName.Get n)
+        match tryElement n e with
+        | None -> failwithf "Element %s not found" n
+        | Some x -> x
+
+    let elementNS (ns: string) (n: string) (e: XContainer) = 
+        let ns = XNamespace.Get ns
+        let nname = ns + n
+        match e.Element nname with
+        | null -> failwithf "Element %s not found" n
+        | x -> x
 
     let elements (n: string) (e: XContainer) =
         e.Elements(XName.Get n)
 
-    let tryElement (n: string) (e: XContainer) =
-        match element n e with
-        | null -> None
-        | x -> Some x
 
     let value (n: XElement) = n.Value
 
