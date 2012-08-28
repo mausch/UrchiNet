@@ -309,6 +309,39 @@ type Metric =
         override x.ToString() =
             (sprintf "%A" x).ToLowerInvariant()
 
+[<RequireQualifiedAccess>]
+type MetricFilterOp = Gt | Ge | Lt | Le | Eq
+    with override x.ToString() =
+            match x with
+            | Gt -> ">"
+            | Ge -> ">="
+            | Lt -> "<"
+            | Le -> "<="
+            | Eq -> "="
+
+[<RequireQualifiedAccess>]
+type DimensionFilterOp = ContainsRegex | DoesNotContainRegex
+    with override x.ToString() =
+            match x with
+            | ContainsRegex -> "=~"
+            | DoesNotContainRegex -> "!~"
+
+type MetricFilter = {
+    Metric: Metric
+    Op: MetricFilterOp
+    Value: int64
+} with
+    override x.ToString() =
+        sprintf "u:%s%s%d" (x.Metric.ToString()) (x.Op.ToString()) x.Value
+
+type DimensionFilter = {
+    Dimension: Dimension
+    Op: DimensionFilterOp
+    Value: string
+} with
+    override x.ToString() =
+        sprintf "u:%s%s%s" (x.Dimension.ToString()) (x.Op.ToString()) x.Value
+
 type Query = {
     ProfileId: int
     StartIndex: int option
@@ -318,10 +351,17 @@ type Query = {
     Dimensions: Dimension NonEmptyList
     Metrics: Metric list
     // Sort
-    // Filters
+    MetricFilter: MetricFilter option
+    DimensionFilter: DimensionFilter option
     Table: Table option
 } with
-    static member Create(profileId, startDate, endDate, dimensions, [<Optional; DefaultParameterValueAttribute(null)>] ?startIndex, [<Optional; DefaultParameterValueAttribute(null)>] ?maxResults, [<Optional; DefaultParameterValueAttribute(null)>] ?metrics, [<Optional; DefaultParameterValueAttribute(null)>] ?table) =
+    static member Create(profileId, startDate, endDate, dimensions, 
+                         [<Optional; DefaultParameterValueAttribute(null)>] ?startIndex, 
+                         [<Optional; DefaultParameterValueAttribute(null)>] ?maxResults, 
+                         [<Optional; DefaultParameterValueAttribute(null)>] ?metrics, 
+                         [<Optional; DefaultParameterValueAttribute(null)>] ?metricFilter,
+                         [<Optional; DefaultParameterValueAttribute(null)>] ?dimensionFilter,
+                         [<Optional; DefaultParameterValueAttribute(null)>] ?table) =
         { Query.ProfileId = profileId
           StartIndex = startIndex
           MaxResults = maxResults
@@ -329,6 +369,8 @@ type Query = {
           EndDate = endDate
           Dimensions = dimensions
           Metrics = defaultArg metrics []
+          MetricFilter = metricFilter
+          DimensionFilter = dimensionFilter
           Table = table }
 
 [<RequireQualifiedAccess>]

@@ -45,6 +45,20 @@ let pintegrationTests (config: Config) =
             printfn "%s" url
             let results = getData config query |> Async.RunSynchronously |> Seq.toList
             Seq.iter (printfn "%A") results
+
+        testCase "Googlebot hits/bytes" <| fun _ ->
+            let query = 
+                Query.Create(profileId = 1,
+                             startDate = DateTime.Now.AddDays(-7.0),
+                             endDate = DateTime.Now,
+                             dimensions = NonEmptyList.singleton Dimension.Cs_useragent,
+                             dimensionFilter = { DimensionFilter.Dimension = Dimension.Cs_useragent
+                                                 Op = DimensionFilterOp.ContainsRegex
+                                                 Value = "Google" },
+                             metrics = [Metric.Bytes; Metric.ValidHits],
+                             table = Table.Robot)
+            let results = getData config query |> Async.RunSynchronously |> Seq.toList
+            Seq.iter (printfn "%A") results
     ]
 
 let integrationTests = 
@@ -227,9 +241,40 @@ let tests =
                   Metric.Responses; Metric.Impressions; Metric.Clicks; Metric.Cost; 
                   Metric.Goals1; Metric.Goals2; Metric.Goals3; Metric.Goals4; ],
                 table.Metrics)
+
+        testList "filter serialization" [
+            testList "metric" [
+                testCase "operator" <| fun _ ->
+                    Assert.Equal("greater than", ">", MetricFilterOp.Gt.ToString())
+                    Assert.Equal("greater or equal", ">=", MetricFilterOp.Ge.ToString())
+                    Assert.Equal("less than", "<", MetricFilterOp.Lt.ToString())
+                    Assert.Equal("less or equal", "<=", MetricFilterOp.Le.ToString())
+                    Assert.Equal("equal", "=", MetricFilterOp.Eq.ToString())
+
+                testCase "filter" <| fun _ ->
+                    let filter = 
+                        { MetricFilter.Metric = Metric.Hits
+                          Op = MetricFilterOp.Gt
+                          Value = 10000L }
+                    Assert.Equal("Hits > 10000", "u:hits>10000", filter.ToString())
+            ]
+
+            testList "dimension" [
+                testCase "operator" <| fun _ ->
+                    Assert.Equal("contains", "=~", DimensionFilterOp.ContainsRegex.ToString())
+                    Assert.Equal("does not contain", "!~", DimensionFilterOp.DoesNotContainRegex.ToString())
+
+                testCase "filter" <| fun _ ->
+                    let filter = 
+                        { DimensionFilter.Dimension = Dimension.Browser_base
+                          Op = DimensionFilterOp.ContainsRegex
+                          Value = "Firefox" }
+                    Assert.Equal("Browser matches 'Firefox'", "u:browser_base=~Firefox", filter.ToString())
+            ]
+        ]
     ]
 
 [<EntryPoint>]
 let main _ = 
-    run tests 
-    //run integrationTests
+    //run tests 
+    run integrationTests

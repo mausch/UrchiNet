@@ -88,8 +88,6 @@ module Impl =
     let serializeDate (t: DateTime) =
         t.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
 
-    let dimensionToString (d: Dimension) = d.ToString()
-
     let dimensionFromString =
         function
         | "sc_status" -> Some Dimension.Sc_status
@@ -161,8 +159,6 @@ module Impl =
         | "rev_goal_path_page2" -> Some Dimension.Rev_goal_path_page2
         | "rev_goal_path_page3" -> Some Dimension.Rev_goal_path_page3
         | _ -> None
-
-    let metricToString (m: Metric) = m.ToString()
 
     let metricFromString =
         function
@@ -255,16 +251,25 @@ module Impl =
     let parseTables (x: XDocument) =
         x.Root.Elements() |> Seq.map parseTable
 
-    let serializeDataParameters (x: Query) =
+    let serializeQueryFilters (x: Query) : (string * string) list =
+        let toList x = x |> Option.map (fun x -> x.ToString()) |> Option.toList
+        let dimension = toList x.DimensionFilter
+        let metric = toList x.MetricFilter
+        let filters = dimension @ metric
+        match filters with
+        | [] -> []
+        | _ -> [ "filters", String.concat "," filters ]
+
+    let serializeQuery (x: Query) =
         [ [ "ids", x.ProfileId.ToString() ]
           x.StartIndex |> Option.map (fun a -> "start-index",a.ToString()) |> Option.toList
           x.MaxResults |> Option.map (fun a -> "max-results",a.ToString()) |> Option.toList
           [ "start-date", serializeDate x.StartDate ]
           [ "end-date", serializeDate x.EndDate ]
-          [ "dimensions", NonEmptyList.toSeq x.Dimensions |> Seq.map dimensionToString |> String.concat "," ]
-          [ "metrics", x.Metrics |> Seq.map metricToString |> String.concat "," ]
+          [ "dimensions", NonEmptyList.toSeq x.Dimensions |> Seq.map (fun x -> x.ToString()) |> String.concat "," ]
+          [ "metrics", x.Metrics |> Seq.map (fun x -> x.ToString()) |> String.concat "," ]
           // sort
-          // filters
+          serializeQueryFilters x
           x.Table |> Option.map (fun t -> "table", (tableId t).ToString()) |> Option.toList
         ] |> List.concat
           
@@ -278,7 +283,7 @@ module Impl =
         | Command.AccountList -> commandService x, []
         | Command.ProfileList accountId -> commandService x, ["accountId", accountId.ToString()]
         | Command.TableList profileId -> commandService x, ["profileId", profileId.ToString()]
-        | Command.Data data -> commandService x, serializeDataParameters data
+        | Command.Data data -> commandService x, serializeQuery data
 
     let buildUrl (service, parameters) (config: Config) =
         sprintf "http://%s/services/v1/%s?login=%s&password=%s&%s" config.Host service config.Login config.Password (serializeParameters parameters)
