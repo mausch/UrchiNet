@@ -1,14 +1,14 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "UrchiNet", "UrchiNet\UrchiNet.fsproj", "{D708E2CF-51A2-4E5B-BDD8-7EE7FF2558EA}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "UrchiNet.Tests", "UrchiNet.Tests\UrchiNet.Tests.fsproj", "{439439B6-1094-4A50-8A0B-70AD83D6D6CA}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{9D7D2457-74A7-4B83-8795-034443EC6810}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "UrchiNet", "UrchiNet\UrchiNet.fsproj", "{D708E2CF-51A2-4E5B-BDD8-7EE7FF2558EA}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "UrchiNet.Tests", "UrchiNet.Tests\UrchiNet.Tests.fsproj", "{439439B6-1094-4A50-8A0B-70AD83D6D6CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrchiNet.CSharpTests", "UrchiNet.CSharpTests\UrchiNet.CSharpTests.csproj", "{C13BE489-4D73-4D18-9526-F8997CA06F10}"
 EndProject
