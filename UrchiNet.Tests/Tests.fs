@@ -69,10 +69,10 @@ let integrationTests =
             then failwithf "Configure %s in your app.config" key
             else r
     let config = 
-        { Config.Host = getOrThrow "urchin.hostport"
-          Login = getOrThrow "urchin.login"
-          Password = getOrThrow "urchin.password" }
-    pintegrationTests config
+        lazy { Config.Host = getOrThrow "urchin.hostport"
+               Login = getOrThrow "urchin.login"
+               Password = getOrThrow "urchin.password" }
+    lazy pintegrationTests config.Value
 
 let tests = 
     TestList [
