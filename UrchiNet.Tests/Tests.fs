@@ -334,7 +334,7 @@ let tests =
 
 [<EntryPoint>]
 let main args = 
-    if Array.exists ((=) "integration") args
-        then run integrationTests.Value
-        else run tests
+    run <| if Array.exists ((=) "integration") args
+        then integrationTests.Value
+        else tests
     
