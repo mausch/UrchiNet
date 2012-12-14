@@ -8,17 +8,18 @@ open UrchiNet.Impl
 open UrchiNet.Helpers
 
 let pintegrationTests (config: Config) = 
+    let runToList x = Async.RunSynchronously >> Choice.get >> Seq.toList <| x
     testList "integration" [
         testCase "accounts request" <| fun _ ->
             let q = doRequest ("adminservice/accounts/", []) config |> Async.RunSynchronously
             printfn "%s" (q.ToString())
 
         testCase "accounts" <| fun _ ->
-            let results = getAccountList config |> Async.RunSynchronously |> Choice.get |> Seq.toList
+            let results = getAccountList config |> runToList
             Seq.iter (printfn "%A") results
 
         testCase "profiles" <| fun _ ->
-            let results = getProfileList config 1 |> Async.RunSynchronously |> Choice.get |> Seq.toList
+            let results = getProfileList config 1 |> runToList
             Seq.iter (printfn "%A") results
 
         testCase "data 1" <| fun _ ->
@@ -31,7 +32,7 @@ let pintegrationTests (config: Config) =
             
             let url = buildUrl (serializeCommand (Command.Data query)) config
             printfn "%s" url
-            let results = getData config query |> Async.RunSynchronously |> Choice.get |> Seq.toList
+            let results = getData config query |> runToList
             Seq.iter (printfn "%A") results
 
         testCase "daily bytes" <| fun _ ->
@@ -44,7 +45,7 @@ let pintegrationTests (config: Config) =
                              table = Table.Aggregates)
             let url = buildUrl (serializeCommand (Command.Data query)) config
             printfn "%s" url
-            let results = getData config query |> Async.RunSynchronously |> Choice.get |> Seq.toList
+            let results = getData config query |> runToList
             Seq.iter (printfn "%A") results
 
         testCase "Googlebot hits/bytes" <| fun _ ->
@@ -58,7 +59,7 @@ let pintegrationTests (config: Config) =
                                                  Value = "Google" },
                              metrics = [Metric.Bytes; Metric.ValidHits],
                              table = Table.Robot)
-            let results = getData config query |> Async.RunSynchronously |> Choice.get |> Seq.toList
+            let results = getData config query |> runToList
             Seq.iter (printfn "%A") results
     ]
 
