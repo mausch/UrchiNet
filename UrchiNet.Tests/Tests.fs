@@ -6,6 +6,7 @@ open Fuchu
 open UrchiNet
 open UrchiNet.Impl
 open UrchiNet.Helpers
+open UrchiNet.Operators
 
 let pintegrationTests (config: Config) = 
     let runToList x = Async.RunSynchronously >> Choice.get >> Seq.toList <| x
@@ -54,9 +55,7 @@ let pintegrationTests (config: Config) =
                              startDate = DateTime.Now.AddDays(-7.0),
                              endDate = DateTime.Now,
                              dimensions = NonEmptyList.singleton Dimension.Cs_useragent,
-                             dimensionFilter = { DimensionFilter.Dimension = Dimension.Cs_useragent
-                                                 Op = DimensionFilterOp.ContainsRegex
-                                                 Value = "Google" },
+                             dimensionFilter = (Dimension.Cs_useragent =~ "Google"),
                              metrics = [Metric.Bytes; Metric.ValidHits],
                              table = Table.Robot)
             let results = getData config query |> runToList
@@ -297,6 +296,40 @@ let tests =
             let xml = XDocument.Parse rawXml
             let message = parseErrorMessage xml
             Assert.Equal("error message", "Ambiguous table, please specify table id explicitly.", message)
+
+        testList "filter operators" [
+            testList "metric" [
+                testCase ">" <| fun _ ->
+                    let filter = Metric.Bytes >. 12L
+                    let expected = {
+                        MetricFilter.Metric = Metric.Bytes
+                        Op = MetricFilterOp.Gt
+                        Value = 12L
+                    }
+                    Assert.Equal("filter", expected, filter)
+            ]
+
+            testList "dimension" [
+                testCase "=~" <| fun _ ->
+                    let filter = Dimension.Browser_base =~ "mozilla"
+                    let expected = {
+                        DimensionFilter.Dimension = Dimension.Browser_base
+                        Op = DimensionFilterOp.ContainsRegex
+                        Value = "mozilla"
+                    }
+                    Assert.Equal("filter", expected, filter)
+
+                testCase "!~" <| fun _ ->
+                    let filter = Dimension.Browser_base =/~ "mozilla"
+                    let expected = {
+                        DimensionFilter.Dimension = Dimension.Browser_base
+                        Op = DimensionFilterOp.DoesNotContainRegex
+                        Value = "mozilla"
+                    }
+                    Assert.Equal("filter", expected, filter)
+                    
+            ]
+        ]
     ]
 
 [<EntryPoint>]

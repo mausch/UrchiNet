@@ -323,6 +323,42 @@ module Impl =
             | Choice2Of2 error -> return parseErrorMessage error |> Choice2Of2
         }
 
+module Operators =
+    let inline (>.) metric value =
+        { MetricFilter.Metric = metric
+          Op = MetricFilterOp.Gt
+          Value = value }
+
+    let inline (<.) metric value =
+        { MetricFilter.Metric = metric
+          Op = MetricFilterOp.Lt
+          Value = value }
+
+    let inline (>=.) metric value =
+        { MetricFilter.Metric = metric
+          Op = MetricFilterOp.Ge
+          Value = value }
+
+    let inline (<=.) metric value =
+        { MetricFilter.Metric = metric
+          Op = MetricFilterOp.Le
+          Value = value }
+
+    let inline (=.) metric value =
+        { MetricFilter.Metric = metric
+          Op = MetricFilterOp.Eq
+          Value = value }
+
+    let inline (=~) dimension value =
+        { DimensionFilter.Dimension = dimension
+          Op = DimensionFilterOp.ContainsRegex
+          Value = value }
+
+    let inline (=/~) dimension value =
+        { DimensionFilter.Dimension = dimension
+          Op = DimensionFilterOp.DoesNotContainRegex
+          Value = value }
+        
 [<AutoOpen>]
 module Functions =
     open Impl
