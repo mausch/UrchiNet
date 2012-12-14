@@ -299,6 +299,8 @@ let tests =
     ]
 
 [<EntryPoint>]
-let main _ = 
-    run tests 
-    //run integrationTests
+let main args = 
+    if Array.exists ((=) "integration") args
+        then run integrationTests.Value
+        else run tests
+    
