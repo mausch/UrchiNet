@@ -16,7 +16,7 @@ type Profile = {
     Account: Account
 }
 
-/// https://secure.urchin.com/helpwiki/en/Tables_v1.html
+/// http://support.google.com/urchin/bin/answer.py?hl=en&topic=2645444&ctx=topic&answer=2646446
 [<RequireQualifiedAccess>]
 type Table =
     /// Marketing Campaign results 
@@ -104,7 +104,7 @@ type Table =
     /// aggregates by period (for example monthly, daily, hourly totals). 
     | Aggregates
 
-/// https://secure.urchin.com/helpwiki/en/Dimensions_v1.html
+/// http://support.google.com/urchin/bin/answer.py?hl=en&answer=2646388&topic=2645444&ctx=topic
 [<RequireQualifiedAccess>]
 type Dimension =
     /// Return status code from server. 
@@ -247,7 +247,7 @@ type Dimension =
         override x.ToString() =
             (sprintf "%A" x).ToLowerInvariant()
 
-/// https://secure.urchin.com/helpwiki/en/Metrics_and_Units_v1.html
+/// http://support.google.com/urchin/bin/answer.py?hl=en&answer=2646445&topic=2645444&ctx=topic
 [<RequireQualifiedAccess>]
 type Metric =
     ///  Number of hits 
