@@ -40,8 +40,9 @@
     <Reference Include="FSharpx.Core">
       <HintPath>..\packages\FSharpx.Core.1.8.22\lib\40\FSharpx.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Fuchu">
-      <HintPath>..\packages\Fuchu.0.2.0\lib\net40-client\Fuchu.dll</HintPath>
+    <Reference Include="Fuchu, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Fuchu.0.2.2\lib\net40-client\Fuchu.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
