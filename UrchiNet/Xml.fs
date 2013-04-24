@@ -1,7 +1,6 @@
 ﻿namespace UrchiNet
 
 module Xml =
-    open UrchiNet.Helpers
     open System.Xml.Linq
 
     /// <summary>

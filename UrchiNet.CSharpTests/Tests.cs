@@ -2,6 +2,8 @@
 using System.Configuration;
 using System.Linq;
 using Fuchu;
+using FSharpx;
+using FSharpx.Collections;
 using Microsoft.FSharp.Core;
 
 namespace UrchiNet.CSharpTests {
@@ -44,7 +46,7 @@ namespace UrchiNet.CSharpTests {
                         startDate: DateTime.Now, 
                         endDate: DateTime.Now, 
                         dimensions: NonEmptyList.Singleton(Dimension.Browser_base),
-                        table: FSharpOption<Table>.Some(Table.BrowserPlatformConnectionSpeed1));
+                        table: Table.BrowserPlatformConnectionSpeed1.Some());
                     var results = service.GetDataOrThrow(query).ToList();
                     foreach (var record in results) {
                         foreach (var dimension in record.Dimensions)

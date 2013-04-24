@@ -2,6 +2,7 @@
 
 open System
 open System.Runtime.InteropServices
+open FSharpx.Collections
 
 type Account = {
     Id: int

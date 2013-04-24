@@ -1,6 +1,6 @@
 ﻿namespace UrchiNet
 
-open UrchiNet.Helpers
+open FSharpx
 
 /// API methods with async execution
 type AsyncService(config: Config) =

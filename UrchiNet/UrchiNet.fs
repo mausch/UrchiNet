@@ -8,7 +8,8 @@ module Impl =
     open System.IO
     open System.Net
     open Microsoft.FSharp.Control.WebExtensions
-    open UrchiNet.Helpers
+    open FSharpx
+    open FSharpx.Collections
 
     let tableId = 
         function

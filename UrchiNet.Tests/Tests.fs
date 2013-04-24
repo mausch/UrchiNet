@@ -5,8 +5,9 @@ open System.Xml.Linq
 open Fuchu
 open UrchiNet
 open UrchiNet.Impl
-open UrchiNet.Helpers
 open UrchiNet.Operators
+open FSharpx
+open FSharpx.Collections
 
 let pintegrationTests (config: Config) = 
     let runToList x = Async.RunSynchronously >> Choice.get >> Seq.toList <| x
